@@ -1,5 +1,3 @@
-import mongoose from "mongoose"
-
 import { connectDB }
 from "../../../lib/db"
 
@@ -13,11 +11,6 @@ from "../../../lib/allocationEngine"
 
 export async function POST(req) {
 
-    const session =
-        await mongoose.startSession()
-
-    session.startTransaction()
-
     try {
 
         await connectDB()
@@ -27,27 +20,13 @@ export async function POST(req) {
 
         // CREATE LEAD
 
-        const leadArray =
-            await Lead.create(
-                [body],
-                { session }
-            )
-
-        const lead = leadArray[0]
+        const lead =
+            await Lead.create(body)
 
         // ALLOCATE PROVIDERS
 
         const assignedProviders =
-            await allocateProviders(
-                lead,
-                session
-            )
-
-        // COMMIT
-
-        await session.commitTransaction()
-
-        session.endSession()
+            await allocateProviders(lead)
 
         return Response.json({
 
@@ -61,11 +40,7 @@ export async function POST(req) {
 
     } catch (error) {
 
-        // ROLLBACK
-
-        await session.abortTransaction()
-
-        session.endSession()
+        console.log(error)
 
         return Response.json({
 
